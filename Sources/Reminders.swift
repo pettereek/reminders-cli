@@ -1,4 +1,5 @@
 import EventKit
+import Rainbow
 
 private let Store = EKEventStore()
 
@@ -13,8 +14,9 @@ final class Reminders {
 
     func showLists() {
         let calendars = self.getCalendars()
+        print("Lists:")
         for calendar in calendars {
-            print(calendar.title)
+            print("  -".green, calendar.title)
         }
     }
 
@@ -23,8 +25,9 @@ final class Reminders {
         let semaphore = DispatchSemaphore(value: 0)
 
         self.reminders(onCalendar: calendar) { reminders in
-            for (i, reminder) in reminders.enumerated() {
-                print(i, reminder.title)
+            print("Items in \(name.green):")
+            for (i, reminder) in reminders.enumerate() {
+                print("  \(i)".green, reminder.title)
             }
 
             semaphore.signal()
@@ -44,9 +47,10 @@ final class Reminders {
             }
 
             do {
-                reminder.isCompleted = true
-                try Store.save(reminder, commit: true)
-                print("Completed '\(reminder.title)'")
+                reminder.completed = true
+                try Store.saveReminder(reminder, commit: true)
+                let done = "✔︎".green
+                print("  \(done) \(reminder.title)")
             } catch let error {
                 print("Failed to save reminder with error: \(error)")
                 exit(1)
@@ -65,8 +69,9 @@ final class Reminders {
         reminder.title = string
 
         do {
-            try Store.save(reminder, commit: true)
-            print("Added '\(reminder.title)' to '\(calendar.title)'")
+            try Store.saveReminder(reminder, commit: true)
+            let added = "✗".green
+            print("  \(added) \(reminder.title) added to \(calendar.title)")
         } catch let error {
             print("Failed to save reminder with error: \(error)")
             exit(1)
