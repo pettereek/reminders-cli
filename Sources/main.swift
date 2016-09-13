@@ -2,20 +2,31 @@ import AppKit
 import Commander
 
 private let reminders = Reminders()
+private let defaultList = DefaultList()
+
 private func createCLI() -> Group {
+    let id = defaultList.getDefaultListIdentifier()
+
     return Group {
-        $0.command("show-lists") {
-            reminders.showLists()
+        $0.command("use") { (listName: String) in
+            let id = reminders.idForList(withName: listName)
+            defaultList.setDefaultList(withIdentifier: id, listName: listName)
         }
-        $0.command("show") { (listName: String) in
-            reminders.showListItems(withName: listName)
+        $0.command(
+            "lists",
+            Flag("verbose", description: "show more information")
+        ) { (verbose) in
+            reminders.showLists(withActiveList: id, verbose: verbose)
         }
-        $0.command("complete") { (listName: String, index: Int) in
-            reminders.complete(itemAtIndex: index, onListNamed: listName)
+        $0.command("show") {
+            reminders.showListItems(withIdentifier: id)
         }
-        $0.command("add") { (listName: String, parser: ArgumentParser) in
-            let string = parser.remainder.joined(separator: " ")
-            reminders.addReminder(string: string, toListNamed: listName)
+        $0.command("complete") { (index: Int) in
+            reminders.complete(itemAtIndex: index, onList: id)
+        }
+        $0.command("add") { (parser: ArgumentParser) in
+            let string = parser.remainder.joinWithSeparator(" ")
+            reminders.addReminder(string: string, toList: id)
         }
     }
 }
