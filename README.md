@@ -36,6 +36,8 @@ $ reminders complete 0
   ✔ ︎Write README
 $ reminders show
   0 Ship reminders-cli
+$ reminders show-completed
+  0 Write README
 ```
 
 #### Add a reminder to a list
@@ -47,6 +49,8 @@ $ reminders show
 Soon:
   0 Ship reminders-cli
   1 Go to sleep
+$ reminders remove 1 # --completed removes from completed list
+  ✗ Go to sleep
 ```
 
 ## Installation:
