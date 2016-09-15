@@ -33,12 +33,13 @@ final class Reminders {
         }
     }
 
-    func showListItems(withIdentifier id: String) {
+    func showListItems(withIdentifier id: String, completed: Bool) {
         let calendar = self.calendar(withIdentifier: id)
         let semaphore = dispatch_semaphore_create(0)
 
-        self.reminders(onCalendar: calendar) { reminders in
-            print(calendar.title + ":")
+        self.reminders(onCalendar: calendar, completed: completed) { reminders in
+            let completedIn = completed ? "Completed in " : ""
+            print(completedIn + calendar.title + ":")
             for (i, reminder) in reminders.enumerate() {
                 print(indent, "\(i)".green, reminder.title)
             }
@@ -53,7 +54,7 @@ final class Reminders {
         let calendar = self.calendar(withIdentifier: id)
         let semaphore = dispatch_semaphore_create(0)
 
-        self.reminders(onCalendar: calendar) { reminders in
+        self.reminders(onCalendar: calendar, completed: false) { reminders in
             guard let reminder = reminders[safe: index] else {
                 print("No reminder at index \(index) on \(calendar.title)")
                 exit(1)
@@ -98,10 +99,10 @@ final class Reminders {
 
     // MARK: - Private functions
 
-    private func reminders(onCalendar calendar: EKCalendar, completion: (reminders: [EKReminder]) -> Void) {
+    private func reminders(onCalendar calendar: EKCalendar, completed: Bool, completion: (reminders: [EKReminder]) -> Void) {
         let predicate = Store.predicateForRemindersInCalendars([calendar])
         Store.fetchRemindersMatchingPredicate(predicate) { reminders in
-            let reminders = reminders?.filter { !$0.completed }
+            let reminders = reminders?.filter { completed ? $0.completed : !$0.completed }
                                       .sort { $0.creationDate < $1.creationDate }
             completion(reminders: reminders ?? [])
         }
