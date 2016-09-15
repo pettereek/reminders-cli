@@ -31,6 +31,12 @@ private func createCLI() -> Group {
             let string = parser.remainder.joinWithSeparator(" ")
             reminders.addReminder(string: string, toList: id)
         }
+        $0.command("remove",
+            Flag("completed", description: "Remove from completed reminders"),
+            Argument<Int>("index")
+        ) { completed, index in
+            reminders.removeReminder(atIndex: index, onList: id, completed: completed)
+        }
     }
 }
 

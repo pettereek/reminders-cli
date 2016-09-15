@@ -97,6 +97,30 @@ final class Reminders {
         }
     }
 
+    func removeReminder(atIndex index: Int, onList id: String, completed: Bool) {
+        let calendar = self.calendar(withIdentifier: id)
+        let semaphore = dispatch_semaphore_create(0)
+
+        self.reminders(onCalendar: calendar, completed: completed) { reminders in
+            guard let reminder = reminders[safe: index] else {
+                print("No reminder at index \(index) on \(calendar.title)")
+                exit(1)
+            }
+
+            do {
+                try Store.removeReminder(reminder, commit: true)
+                print(indent, "✗".red, reminder.title)
+            } catch let error {
+                print("Failed to remove reminder with error: \(error)")
+                exit(1)
+            }
+
+            dispatch_semaphore_signal(semaphore)
+        }
+
+        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER)
+    }
+
     // MARK: - Private functions
 
     private func reminders(onCalendar calendar: EKCalendar, completed: Bool, completion: (reminders: [EKReminder]) -> Void) {
