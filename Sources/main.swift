@@ -12,17 +12,11 @@ private func createCLI() -> Group {
             let id = reminders.idForList(withName: listName)
             defaultList.setDefaultList(withIdentifier: id, listName: listName)
         }
-        $0.command(
-            "lists",
-            Flag("verbose", description: "show more information")
-        ) { (verbose) in
+        $0.command("lists", Flag("verbose", description: "Show more information")) { (verbose) in
             reminders.showLists(withActiveList: id, verbose: verbose)
         }
-        $0.command("show") {
-            reminders.showListItems(withIdentifier: id, completed: false)
-        }
-        $0.command("show-completed") {
-            reminders.showListItems(withIdentifier: id, completed: true)
+        $0.command("show", Flag("completed", description: "Show completed reminders")) { completed in
+            reminders.showListItems(withIdentifier: id, completed: completed)
         }
         $0.command("complete") { (index: Int) in
             reminders.complete(itemAtIndex: index, onList: id)
