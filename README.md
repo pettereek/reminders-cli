@@ -7,35 +7,46 @@ A simple CLI for interacting with OS X reminders.
 #### Show all lists
 
 ```
-$ reminders show-lists
-Soon
-Eventually
+$ reminders lists
+Lists:
+  Soon
+  Eventually
+```
+
+#### Set your active list
+
+```
+$ reminders use Soon
+Using Soon
 ```
 
 #### Show reminders on a specific list
 
 ```
-$ reminders show Soon
-0 Write README
-1 Ship reminders-cli
+$ reminders show
+Soon:
+  0 Write README
+  1 Ship reminders-cli
 ```
 
 #### Complete an item on a list
 
 ```
-$ reminders complete Soon 0
-Completed 'Write README'
-$ reminders show Soon
-0 Ship reminders-cli
+$ reminders complete 0
+  ✔ ︎Write README
+$ reminders show
+  0 Ship reminders-cli
 ```
 
 #### Add a reminder to a list
 
 ```
-$ reminders add Soon Go to sleep
-$ reminders show Soon
-0 Ship reminders-cli
-1 Go to sleep
+$ reminders add Go to sleep
+  "Go to sleep" added to Soon
+$ reminders show
+Soon:
+  0 Ship reminders-cli
+  1 Go to sleep
 ```
 
 ## Installation:
