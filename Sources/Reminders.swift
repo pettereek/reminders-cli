@@ -44,7 +44,7 @@ final class Reminders {
             let completedIn = completed ? "Completed in " : ""
             print(completedIn + calendar.title + ":")
             for (i, reminder) in reminders.enumerated() {
-                print(indent, "\(i)".green, reminder.title)
+                print(indent, "\(i)".lightBlack, reminder.title)
             }
 
             semaphore.signal()
