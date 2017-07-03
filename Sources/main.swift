@@ -9,8 +9,8 @@ private func createCLI() -> Group {
 
     return Group {
         $0.command("use") { (listName: String) in
-            let id = reminders.idForList(withName: listName)
-            defaultList.setDefaultList(withIdentifier: id, listName: listName)
+            let (id, name) = reminders.idForList(withName: listName)
+            defaultList.setDefaultList(withIdentifier: id, listName: name)
         }
         $0.command("lists", Flag("verbose", description: "Show more information")) { (verbose) in
             reminders.showLists(withActiveList: id, verbose: verbose)

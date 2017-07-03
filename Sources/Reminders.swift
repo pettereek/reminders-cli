@@ -13,9 +13,12 @@ final class Reminders {
         }
     }
 
-    func idForList(withName name: String) -> String {
-        let calendar = self.calendar(withName: name)
-        return calendar.calendarIdentifier
+    func idForList(withName name: String) -> (identifier: String, name: String) {
+        guard let byName = self.calendar(withName: name) else {
+            let byId = self.calendar(withIdentifier: name)
+            return (name, byId.title)
+        }
+        return (byName.calendarIdentifier, name)
     }
 
     func nameForList(withIdentifier id: String) -> String {
@@ -141,12 +144,11 @@ final class Reminders {
         }
     }
 
-    private func calendar(withName name: String) -> EKCalendar {
+    private func calendar(withName name: String) -> EKCalendar? {
         if let calendar = self.getCalendars().find(predicate: { $0.title.lowercased() == name.lowercased() }) {
             return calendar
         } else {
-            print("No reminders list matching \(name)")
-            exit(1)
+            return nil
         }
     }
 
