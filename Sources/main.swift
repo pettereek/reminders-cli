@@ -22,7 +22,7 @@ private func createCLI() -> Group {
             reminders.complete(itemAtIndex: index, onList: id)
         }
         $0.command("add") { (parser: ArgumentParser) in
-            let string = parser.remainder.joinWithSeparator(" ")
+            let string = parser.remainder.joined(separator: " ")
             reminders.addReminder(string: string, toList: id)
         }
         $0.command("remove",
