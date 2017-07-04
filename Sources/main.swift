@@ -11,6 +11,7 @@ private func createCLI() -> Group {
         $0.command("use") { (listName: String) in
             let (id, name) = reminders.idForList(withName: listName)
             defaultList.setDefaultList(withIdentifier: id, listName: name)
+            reminders.showListItems(withIdentifier: id, withHeader: false)
         }
         $0.command("lists", Flag("verbose", description: "Show more information")) { (verbose) in
             reminders.showLists(withActiveList: id, verbose: verbose)
@@ -20,16 +21,19 @@ private func createCLI() -> Group {
         }
         $0.command("complete") { (index: Int) in
             reminders.complete(itemAtIndex: index, onList: id)
+            reminders.showListItems(withIdentifier: id)
         }
         $0.command("add") { (parser: ArgumentParser) in
             let string = parser.remainder.joined(separator: " ")
-            reminders.addReminder(string: string, toList: id)
+            let count = reminders.addReminder(string: string, toList: id)
+            reminders.showListItems(withIdentifier: id, highlighted: count-1)
         }
         $0.command("remove",
             Flag("completed", description: "Remove from completed reminders"),
             Argument<Int>("index")
         ) { completed, index in
             reminders.removeReminder(atIndex: index, onList: id, completed: completed)
+            reminders.showListItems(withIdentifier: id)
         }
     }
 }

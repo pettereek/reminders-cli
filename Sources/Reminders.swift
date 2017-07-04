@@ -36,15 +36,23 @@ final class Reminders {
         }
     }
 
-    func showListItems(withIdentifier id: String, completed: Bool) {
+    func showListItems(withIdentifier id: String, completed: Bool = false, highlighted: Int = -1, withHeader: Bool = true) {
         let calendar = self.calendar(withIdentifier: id)
         let semaphore = DispatchSemaphore.init(value:0)
 
         self.reminders(onCalendar: calendar, completed: completed) { reminders in
-            let completedIn = completed ? "Completed in " : ""
-            print(completedIn + calendar.title + ":")
+            if withHeader {
+                let completedIn = completed ? "Completed in " : ""
+                print(completedIn + calendar.title + ":")
+            }
             for (i, reminder) in reminders.enumerated() {
-                print(indent, "\(i)".lightBlack, reminder.title)
+                var title = reminder.title
+                var index = "\(i)".lightBlack
+                if i == highlighted {
+                    title = title.green
+                    index = "+".green
+                }
+                print(indent, index, title)
             }
 
             semaphore.signal()
@@ -78,7 +86,9 @@ final class Reminders {
         _ = semaphore.wait(timeout: DispatchTime.distantFuture)
     }
 
-    func addReminder(string: String, toList id: String) {
+    // addReminder add a new reminder to a list.
+    // Returns the number of reminders in the list
+    func addReminder(string: String, toList id: String) -> Int {
         let trimmed = string.trimmingCharacters(in: .whitespaces)
 
         if trimmed == "" {
@@ -93,7 +103,15 @@ final class Reminders {
 
         do {
             try Store.save(reminder, commit: true)
-            print(indent, "\"\(reminder.title)\" added to \(calendar.title)")
+            var count = 0
+            let calendar = self.calendar(withIdentifier: id)
+            let semaphore = DispatchSemaphore.init(value:0)
+            self.reminders(onCalendar: calendar, completed: false) { reminders in
+                count = reminders.count
+                semaphore.signal()
+            }
+            _ = semaphore.wait(timeout: DispatchTime.distantFuture)
+            return count
         } catch let error {
             print("Failed to save reminder with error: \(error)")
             exit(1)
