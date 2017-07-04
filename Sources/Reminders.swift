@@ -29,10 +29,18 @@ final class Reminders {
     func showLists(withActiveList id: String, verbose: Bool) {
         let calendars = self.getCalendars()
         print("Lists:")
+
+        var maxName = 0
         for calendar in calendars {
-            let active = calendar.calendarIdentifier == id ? "✔︎".green : ""
-            let verboseId = verbose ? calendar.calendarIdentifier.lightBlack : ""
-            print(indent, calendar.title, active, verboseId)
+            if maxName < calendar.title.characters.count {
+                maxName = calendar.title.characters.count
+            }
+        }
+        for calendar in calendars {
+            let active = calendar.calendarIdentifier == id ? " ✔︎".green : "  "
+            let padding = String(repeating: " ", count: maxName - calendar.title.characters.count)
+            let verboseId = verbose ? padding + " ID: " + calendar.calendarIdentifier : ""
+            print(indent, calendar.title + active + verboseId)
         }
     }
 
@@ -43,16 +51,21 @@ final class Reminders {
         self.reminders(onCalendar: calendar, completed: completed) { reminders in
             if withHeader {
                 let completedIn = completed ? "Completed in " : ""
-                print(completedIn + calendar.title + ":")
+                print(completedIn + calendar.title.cyan)
             }
+            var count = 0
             for (i, reminder) in reminders.enumerated() {
+                count += 1
                 var title = reminder.title
-                var index = "\(i)".lightBlack
+                var index = "\(i)"
                 if i == highlighted {
                     title = title.green
                     index = "+".green
                 }
                 print(indent, index, title)
+            }
+            if count == 0 {
+                print("empty list")
             }
 
             semaphore.signal()

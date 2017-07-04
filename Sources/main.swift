@@ -4,22 +4,23 @@ import Commander
 private let reminders = Reminders()
 private let defaultList = DefaultList()
 
+private let completedFlag = Flag("completed", description: "In completed reminders")
+private let verboseFlag = Flag("verbose", description: "Verbose output")
+
 private func createCLI() -> Group {
     let id = defaultList.getDefaultListIdentifier()
 
+    func showReminders(completed: Bool) {
+        reminders.showListItems(withIdentifier: id, completed: completed)
+    }
+
     return Group {
-        $0.command("use") { (listName: String) in
-            let (id, name) = reminders.idForList(withName: listName)
-            defaultList.setDefaultList(withIdentifier: id, listName: name)
-            reminders.showListItems(withIdentifier: id, withHeader: false)
-        }
-        $0.command("lists", Flag("verbose", description: "Show more information")) { (verbose) in
-            reminders.showLists(withActiveList: id, verbose: verbose)
-        }
-        $0.command("show", Flag("completed", description: "Show completed reminders")) { completed in
-            reminders.showListItems(withIdentifier: id, completed: completed)
-        }
-        $0.command("complete") { (index: Int) in
+        $0.command("ls", completedFlag, showReminders)
+
+        $0.command(
+            "done",
+            Argument<Int>("at index", description: "(zero based) Index of the reminder to complete")
+        ) { (index: Int) in
             reminders.complete(itemAtIndex: index, onList: id)
             reminders.showListItems(withIdentifier: id)
         }
@@ -28,12 +29,29 @@ private func createCLI() -> Group {
             let count = reminders.addReminder(string: string, toList: id)
             reminders.showListItems(withIdentifier: id, highlighted: count-1)
         }
-        $0.command("remove",
-            Flag("completed", description: "Remove from completed reminders"),
-            Argument<Int>("index")
-        ) { completed, index in
+        $0.command(
+            "rm",
+            completedFlag,
+            Argument<Int>("at index", description: "(zero based) Index of the remider to remove")
+        ) { (completed: Bool, index: Int) in
             reminders.removeReminder(atIndex: index, onList: id, completed: completed)
-            reminders.showListItems(withIdentifier: id)
+            reminders.showListItems(withIdentifier: id, completed: completed)
+        }
+
+        $0.command(
+            "use",
+            Argument<String>("name", description: "Name or id of list to use (see: `lists --verbose`)")
+        ) { (listName: String) in
+            let (id, name) = reminders.idForList(withName: listName)
+            defaultList.setDefaultList(withIdentifier: id, listName: name)
+            reminders.showListItems(withIdentifier: id, withHeader: false)
+        }
+
+        $0.command(
+            "lists",
+            verboseFlag
+        ) { (verbose: Bool) in
+            reminders.showLists(withActiveList: id, verbose: verbose)
         }
     }
 }
