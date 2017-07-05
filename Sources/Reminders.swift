@@ -2,7 +2,7 @@ import EventKit
 import Rainbow
 
 private let Store = EKEventStore()
-private let indent = " "
+private let indent = "  "
 
 final class Reminders {
     func requestAccess(completion: @escaping (_: Bool) -> Void) {
@@ -26,10 +26,16 @@ final class Reminders {
         return calendar.title
     }
 
+    func completionLists() {
+        let calendars = self.getCalendars()
+        for calendar in calendars {
+          print(calendar.title+"%%%")
+        }
+    }
+
     func showLists(withActiveList id: String, verbose: Bool) {
         let calendars = self.getCalendars()
         print("Lists:")
-
         var maxName = 0
         for calendar in calendars {
             if maxName < calendar.title.characters.count {
@@ -40,7 +46,7 @@ final class Reminders {
             let active = calendar.calendarIdentifier == id ? " ✔︎".green : "  "
             let padding = String(repeating: " ", count: maxName - calendar.title.characters.count)
             let verboseId = verbose ? padding + " ID: " + calendar.calendarIdentifier : ""
-            print(indent, calendar.title + active + verboseId)
+            print(indent + calendar.title + active + verboseId)
         }
     }
 
@@ -62,7 +68,7 @@ final class Reminders {
                     title = title.green
                     index = "+".green
                 }
-                print(indent, index, title)
+                print(indent + index, title)
             }
             if count == 0 {
                 print("empty list")
@@ -87,7 +93,7 @@ final class Reminders {
             do {
                 reminder.isCompleted = true
                 try Store.save(reminder, commit: true)
-                print(indent, "✔︎".green, reminder.title)
+                print(indent + "✔︎".green, reminder.title)
             } catch let error {
                 print("Failed to save reminder with error: \(error)")
                 exit(1)
@@ -143,7 +149,7 @@ final class Reminders {
 
             do {
                 try Store.remove(reminder, commit: true)
-                print(indent, "✗".red, reminder.title)
+                print(indent + "✗".red, reminder.title)
             } catch let error {
                 print("Failed to remove reminder with error: \(error)")
                 exit(1)

@@ -1,46 +1,55 @@
 #compdef reminders
 
 _get_lists() {
-  if ([[ ${+_lists} -eq 0 ]] || _cache_invalid LISTS) && ! _retrieve_cache LISTS; then
-    _lists=($(reminders show-lists 2> /dev/null))
-    _store_cache LISTS _lists
-  fi
-
+  _lists=($(reminders lists --completion 2> /dev/null))
   echo $_lists
 }
 
-_reminders_show-lists() {
-  _message "show all reminders lists"
-}
-
-_reminders_show() {
-  if [[ ${#words[@]} -eq 2 ]]; then
-    lists=($(_get_lists))
-    if [[ $lists != "" ]]; then
-      _values "lists" $lists
-    fi
-  fi
-}
-
-_reminders_complete() {
-  if [[ ${#words[@]} -eq 2 ]]; then
-    lists=($(_get_lists))
-    if [[ $lists != "" ]]; then
-      _values "lists" $lists
-    fi
-  elif [[ ${#words[@]} -gt 2 ]]; then
-    _message "reminder index"
-  fi
-}
-
 _reminders_add() {
+  _message "reminder content"
+}
+_reminders_done() {
+  _message "the index"
+}
+_reminders_rm() {
+  _message "the index"
+}
+_reminders_ls() {
+  _message "list reminders"
+}
+
+_reminders_lists() {
+  _arguments '--with-ids[show list ids]'
+}
+
+_reminders_use() {
   if [[ ${#words[@]} -eq 2 ]]; then
     lists=($(_get_lists))
+    # no use in continuing if we got no lists to suggest
     if [[ $lists != "" ]]; then
-      _values "lists" $lists
+      # we'll get the lists separated by the sequence '%%%' and must
+      # keep the leading words around to allow multi-word list names
+      MEM=()
+      for li in "${lists[@]}"
+      do
+        if [[ $li != *"%%%" ]] then
+          # if this item did not end with the separator, just add it
+          # to MEM and take the next
+          MEM+=($li)
+          continue
+        fi
+        # remove trailing '%%%'
+        lli=${li%"%%%"}
+        if [[ ${#MEM[@]} -eq 0 ]]; then
+          # cannot always add 'MEM ' since that would cause an
+          # unintentional extra leading whitespace
+          compadd $lli
+        else
+          compadd "$MEM $lli" # join MEM and lli
+        fi
+        MEM=() # reset
+      done
     fi
-  elif [[ ${#words[@]} -gt 2 ]]; then
-    _message "reminder content"
   fi
 }
 
@@ -50,14 +59,15 @@ if (( CURRENT > 2 )); then
   _call_function - _reminders_${words[1]}
   return
 else
-  local -a _reminders_subcommands
-  _reminders_subcommands=(
-  'show-lists:show all reminders lists'
-  'show:show the reminders on a list'
-  'complete:complete a specific reminder on a list'
-  'add:add a new reminder on a list'
+  local -a _reminders_commands
+  _reminders_commands=(
+  'ls:list reminders'
+  'done:complete a reminder'
+  'add:add a reminder'
+  'rm:remove a reminder'
+  'use:set the current list'
+  'lists:show all reminders lists'
   )
-  _describe -t commands 'reminders subcommands' _reminders_subcommands && ret=0
+  _describe -t commands 'commands' _reminders_commands && ret=0
 fi
-
 # vim:ft=zsh:ts=2

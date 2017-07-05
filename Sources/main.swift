@@ -5,7 +5,6 @@ private let reminders = Reminders()
 private let defaultList = DefaultList()
 
 private let completedFlag = Flag("completed", description: "In completed reminders")
-private let verboseFlag = Flag("verbose", description: "Verbose output")
 
 private func createCLI() -> Group {
     let id = defaultList.getDefaultListIdentifier()
@@ -47,11 +46,12 @@ private func createCLI() -> Group {
             reminders.showListItems(withIdentifier: id, withHeader: false)
         }
 
-        $0.command(
-            "lists",
-            verboseFlag
-        ) { (verbose: Bool) in
-            reminders.showLists(withActiveList: id, verbose: verbose)
+        $0.command("lists") { (parser: ArgumentParser) in
+            if parser.hasOption("completion") {
+                reminders.completionLists()
+                return
+            }
+            reminders.showLists( withActiveList: id, verbose: parser.hasOption("with-ids"))
         }
     }
 }
